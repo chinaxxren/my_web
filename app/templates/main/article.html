@@ -25,7 +25,7 @@
           </div>
 
           <div class="article-content markdown-body mb-4">
-            {{ article.content | markdown }}
+            {{ article.content | markdown | safe }}
           </div>
         </div>
       </article>
