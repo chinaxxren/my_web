@@ -84,13 +84,17 @@ class Image(db.Model):
         return str(uuid.uuid4())
 
     @staticmethod
-    def cleanup_temporary_images():
-        """清理所有临时图片"""
+    def cleanup_temporary_images(hours=24):
+        """清理超过指定时间的临时图片"""
         from app import current_app
         import os
+        from datetime import datetime, timedelta
 
-        # 获取所有临时图片
-        temp_images = Image.query.filter_by(is_temporary=True).all()
+        # 获取超过指定时间的临时图片
+        cutoff_time = datetime.utcnow() - timedelta(hours=hours)
+        temp_images = Image.query.filter(
+            Image.is_temporary == True, Image.created_at < cutoff_time
+        ).all()
 
         for image in temp_images:
             # 删除文件
@@ -104,3 +108,32 @@ class Image(db.Model):
             db.session.delete(image)
 
         db.session.commit()
+
+    def to_dict(self):
+        """将图片对象转换为字典"""
+        return {
+            "id": self.id,
+            "filename": self.filename,
+            "original_filename": self.original_filename,
+            "file_size": self.file_size,
+            "file_type": self.file_type,
+            "created_at": self.created_at.isoformat(),
+            "article_id": self.article_id,
+            "is_temporary": self.is_temporary,
+            "temp_id": self.temp_id,
+        }
+
+    def associate_with_article(self, article_id):
+        """将临时图片关联到文章"""
+        if self.is_temporary:
+            self.article_id = article_id
+            self.is_temporary = False
+            self.temp_id = None
+            db.session.commit()
+
+    @classmethod
+    def get_temporary_images(cls):
+        """获取所有临时图片，按创建时间倒序排序"""
+        return (
+            cls.query.filter_by(is_temporary=True).order_by(cls.created_at.desc()).all()
+        )

@@ -94,7 +94,7 @@
                 <button
                   type="button"
                   class="btn btn-sm btn-outline-primary copy-markdown"
-                  data-markdown="![{{ image.original_filename }}]({{ url_for('static', filename='uploads/' + image.filename) }})"
+                  data-markdown="![{{ image.original_filename }}](/static/uploads/{{ image.filename }})"
                 >
                   <i class="fas fa-copy"></i> 复制Markdown
                 </button>
@@ -124,7 +124,7 @@
                 <button
                   type="button"
                   class="btn btn-sm btn-outline-primary copy-markdown"
-                  data-markdown="![{{ image.original_filename }}]({{ url_for('static', filename='uploads/' + image.filename) }})"
+                  data-markdown="![{{ image.original_filename }}](/static/uploads/{{ image.filename }})"
                 >
                   <i class="fas fa-copy"></i> 复制Markdown
                 </button>
@@ -160,9 +160,116 @@
 
 <script>
   document.addEventListener("DOMContentLoaded", function () {
+    // 创建图片卡片的函数
+    function createImageCard(image) {
+      const isTemp = !image.article_id;
+      const deleteUrl = isTemp
+        ? `/admin/delete_temp_image/${image.temp_id}`
+        : `/admin/image/${image.id}/delete`;
+
+      return `
+        <div class="col-md-4 mb-3">
+          <div class="card">
+            <img
+              src="/static/uploads/${image.filename}"
+              class="card-img-top"
+              alt="${image.original_filename}"
+            />
+            <div class="card-body">
+              <p class="card-text small">
+                ${image.original_filename}<br />
+                ${(image.file_size / 1024).toFixed(1)} KB
+              </p>
+              <button
+                type="button"
+                class="btn btn-sm btn-outline-danger delete-image"
+                data-delete-url="${deleteUrl}"
+              >
+                <i class="fas fa-trash"></i>
+              </button>
+              <button
+                type="button"
+                class="btn btn-sm btn-outline-primary copy-markdown"
+                data-markdown="![${
+                  image.original_filename
+                }](/static/uploads/${image.filename})"
+              >
+                <i class="fas fa-copy"></i> 复制Markdown
+              </button>
+            </div>
+          </div>
+        </div>
+      `;
+    }
+
+    // 为新添加的按钮绑定事件
+    function bindImageCardEvents(cardElement) {
+      // 绑定删除按钮事件
+      const deleteButton = cardElement.querySelector(".delete-image");
+      if (deleteButton) {
+        deleteButton.addEventListener("click", async function () {
+          if (!confirm("确定要删除这张图片吗？")) {
+            return;
+          }
+
+          const deleteUrl = this.dataset.deleteUrl;
+          const imageCard = this.closest(".col-md-4");
+
+          try {
+            const response = await fetch(deleteUrl, {
+              method: "POST",
+            });
+            const data = await response.json();
+
+            if (data.success) {
+              imageCard.remove();
+            } else {
+              alert(data.error || "删除失败");
+            }
+          } catch (error) {
+            console.error("Error:", error);
+            alert("删除失败");
+          }
+        });
+      }
+
+      // 绑定复制按钮事件
+      const copyButton = cardElement.querySelector(".copy-markdown");
+      if (copyButton) {
+        copyButton.addEventListener("click", async function () {
+          const markdown = this.dataset.markdown;
+          try {
+            if (navigator.clipboard && window.isSecureContext) {
+              await navigator.clipboard.writeText(markdown);
+            } else {
+              const textArea = document.createElement("textarea");
+              textArea.value = markdown;
+              textArea.style.position = "fixed";
+              textArea.style.left = "-999999px";
+              document.body.appendChild(textArea);
+              textArea.select();
+              try {
+                document.execCommand("copy");
+              } catch (err) {
+                console.error("复制失败:", err);
+              }
+              document.body.removeChild(textArea);
+            }
+            const originalText = this.innerHTML;
+            this.innerHTML = '<i class="fas fa-check"></i> 已复制';
+            setTimeout(() => {
+              this.innerHTML = originalText;
+            }, 2000);
+          } catch (err) {
+            console.error("复制失败:", err);
+            alert("复制失败，请手动复制");
+          }
+        });
+      }
+    }
+
     // 处理图片删除
-    const deleteButtons = document.querySelectorAll(".delete-image");
-    deleteButtons.forEach((button) => {
+    document.querySelectorAll(".delete-image").forEach((button) => {
       button.addEventListener("click", async function () {
         if (!confirm("确定要删除这张图片吗？")) {
           return;
@@ -178,7 +285,6 @@
           const data = await response.json();
 
           if (data.success) {
-            // 直接从DOM中移除图片卡片
             imageCard.remove();
           } else {
             alert(data.error || "删除失败");
@@ -191,15 +297,13 @@
     });
 
     // 处理复制Markdown
-    const copyButtons = document.querySelectorAll(".copy-markdown");
-    copyButtons.forEach((button) => {
+    document.querySelectorAll(".copy-markdown").forEach((button) => {
       button.addEventListener("click", async function () {
         const markdown = this.dataset.markdown;
         try {
           if (navigator.clipboard && window.isSecureContext) {
             await navigator.clipboard.writeText(markdown);
           } else {
-            // 回退方案：创建临时文本区域
             const textArea = document.createElement("textarea");
             textArea.value = markdown;
             textArea.style.position = "fixed";
@@ -228,26 +332,54 @@
     // 处理图片上传
     const imageUploadForm = document.getElementById("imageUploadForm");
     if (imageUploadForm) {
-      imageUploadForm.addEventListener("submit", function (e) {
+      imageUploadForm.addEventListener("submit", async function (e) {
         e.preventDefault();
         const formData = new FormData(this);
+        const submitButton = this.querySelector('input[type="submit"]');
 
-        fetch(this.action, {
-          method: "POST",
-          body: formData,
-        })
-          .then((response) => response.json())
-          .then((data) => {
-            if (data.success) {
-              window.location.reload();
-            } else {
-              alert(data.error || "上传失败");
-            }
-          })
-          .catch((error) => {
-            console.error("Error:", error);
-            alert("上传失败");
+        // 禁用提交按钮，防止重复提交
+        if (submitButton) {
+          submitButton.disabled = true;
+        }
+
+        try {
+          const response = await fetch(this.action, {
+            method: "POST",
+            body: formData,
           });
+          const data = await response.json();
+
+          if (data.success) {
+            // 创建新的图片卡片
+            const imageList = document.getElementById("imageList");
+            const tempDiv = document.createElement("div");
+            tempDiv.innerHTML = createImageCard(data.image);
+            const newCard = tempDiv.firstElementChild;
+
+            // 添加新卡片到列表开头
+            if (imageList.firstChild) {
+              imageList.insertBefore(newCard, imageList.firstChild);
+            } else {
+              imageList.appendChild(newCard);
+            }
+
+            // 绑定新卡片的事件
+            bindImageCardEvents(newCard);
+
+            // 清空文件输入
+            this.reset();
+          } else {
+            alert(data.error || "上传失败");
+          }
+        } catch (error) {
+          console.error("Error:", error);
+          alert("上传失败");
+        } finally {
+          // 重新启用提交按钮
+          if (submitButton) {
+            submitButton.disabled = false;
+          }
+        }
       });
     }
   });

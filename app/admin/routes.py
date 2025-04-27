@@ -105,21 +105,22 @@ def new_article():
         db.session.commit()
 
         # 关联临时图片
-        temp_images = Image.query.filter_by(is_temporary=True).all()
+        temp_images = Image.get_temporary_images()
         for image in temp_images:
-            image.article_id = article.id
-            image.is_temporary = False
-            image.temp_id = None
+            image.associate_with_article(article.id)
 
-        db.session.commit()
         flash("文章已创建")
         return redirect(url_for("admin.articles"))
+
+    # 获取当前用户的临时图片
+    temp_images = Image.get_temporary_images()
+
     return render_template(
         "admin/article_form.html",
         title="新建文章",
         form=form,
         image_form=image_form,
-        temp_images=Image.query.filter_by(is_temporary=True).all(),
+        temp_images=temp_images,
     )
 
 
@@ -290,7 +291,9 @@ def upload_temp_image():
             db.session.add(image)
             db.session.commit()
 
-            return jsonify({"success": True, "message": "图片上传成功"})
+            return jsonify(
+                {"success": True, "message": "图片上传成功", "image": image.to_dict()}
+            )
 
     return jsonify({"success": False, "error": "图片上传失败"})
 
@@ -345,7 +348,9 @@ def upload_image(article_id):
             db.session.add(image)
             db.session.commit()
 
-            return jsonify({"success": True, "message": "图片上传成功"})
+            return jsonify(
+                {"success": True, "message": "图片上传成功", "image": image.to_dict()}
+            )
 
     return jsonify({"success": False, "error": "图片上传失败"})
 
