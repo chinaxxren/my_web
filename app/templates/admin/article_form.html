@@ -1,0 +1,163 @@
+{% extends "admin/base.html" %} {% block admin_title %}{{ title }}{% endblock %}
+{% block admin_content %}
+<div class="row">
+  <div class="col-md-8">
+    <form method="post" novalidate>
+      {{ form.hidden_tag() }}
+      <div class="mb-3">
+        {{ form.title.label(class="form-label") }} {{
+        form.title(class="form-control") }} {% for error in form.title.errors %}
+        <span class="text-danger">{{ error }}</span>
+        {% endfor %}
+      </div>
+      <div class="mb-3">
+        {{ form.subtitle.label(class="form-label") }} {{
+        form.subtitle(class="form-control") }} {% for error in
+        form.subtitle.errors %}
+        <span class="text-danger">{{ error }}</span>
+        {% endfor %}
+      </div>
+      <div class="mb-3">
+        {{ form.content.label(class="form-label") }} {{
+        form.content(class="form-control", rows=15) }} {% for error in
+        form.content.errors %}
+        <span class="text-danger">{{ error }}</span>
+        {% endfor %}
+      </div>
+      <div class="mb-3">
+        {{ form.tags.label(class="form-label") }} {{
+        form.tags(class="form-control") }}
+        <small class="form-text text-muted">多个标签用逗号分隔</small>
+        {% for error in form.tags.errors %}
+        <span class="text-danger">{{ error }}</span>
+        {% endfor %}
+      </div>
+      <div class="mb-3">
+        <div class="form-check form-check-inline">
+          {{ form.is_published(class="form-check-input") }} {{
+          form.is_published.label(class="form-check-label") }}
+        </div>
+        <div class="form-check form-check-inline">
+          {{ form.is_top(class="form-check-input") }} {{
+          form.is_top.label(class="form-check-label") }}
+        </div>
+        <div class="form-check form-check-inline">
+          {{ form.is_recommended(class="form-check-input") }} {{
+          form.is_recommended.label(class="form-check-label") }}
+        </div>
+      </div>
+      <div class="mb-3">
+        {{ form.submit(class="btn btn-primary") }}
+        <a href="{{ url_for('admin.articles') }}" class="btn btn-secondary"
+          >取消</a
+        >
+      </div>
+    </form>
+
+    {% if article %}
+    <div class="card mt-4">
+      <div class="card-header">
+        <h5 class="mb-0">图片管理</h5>
+      </div>
+      <div class="card-body">
+        <form
+          method="post"
+          enctype="multipart/form-data"
+          action="{{ url_for('admin.upload_image', article_id=article.id) }}"
+        >
+          {{ image_form.hidden_tag() }}
+          <div class="mb-3">
+            {{ image_form.image(class="form-control") }} {% for error in
+            image_form.image.errors %}
+            <span class="text-danger">{{ error }}</span>
+            {% endfor %}
+          </div>
+          <div class="mb-3">
+            {{ image_form.submit(class="btn btn-primary") }}
+          </div>
+        </form>
+
+        <div class="row mt-3">
+          {% for image in article.images %}
+          <div class="col-md-4 mb-3">
+            <div class="card">
+              <img
+                src="{{ url_for('static', filename='uploads/' + image.filename) }}"
+                class="card-img-top"
+                alt="{{ image.original_filename }}"
+              />
+              <div class="card-body">
+                <p class="card-text small">
+                  {{ image.original_filename }}<br />
+                  {{ (image.file_size / 1024)|round(1) }} KB
+                </p>
+                <form
+                  method="post"
+                  action="{{ url_for('admin.delete_image', id=image.id) }}"
+                  class="d-inline"
+                >
+                  <button
+                    type="submit"
+                    class="btn btn-sm btn-outline-danger"
+                    onclick="return confirm('确定要删除这张图片吗？')"
+                  >
+                    <i class="fas fa-trash"></i>
+                  </button>
+                </form>
+                <button
+                  type="button"
+                  class="btn btn-sm btn-outline-primary copy-markdown"
+                  data-markdown="![{{ image.original_filename }}]({{ url_for('static', filename='uploads/' + image.filename) }})"
+                >
+                  <i class="fas fa-copy"></i> 复制Markdown
+                </button>
+              </div>
+            </div>
+          </div>
+          {% endfor %}
+        </div>
+      </div>
+    </div>
+    {% endif %}
+  </div>
+  <div class="col-md-4">
+    <div class="card">
+      <div class="card-header">
+        <h5 class="mb-0">编辑提示</h5>
+      </div>
+      <div class="card-body">
+        <ul class="mb-0">
+          <li>标题是必填项，长度不超过200个字符</li>
+          <li>副标题可选，长度不超过200个字符</li>
+          <li>内容支持Markdown格式</li>
+          <li>标签用逗号分隔，会自动创建新标签</li>
+          <li>草稿状态的文章不会在前台显示</li>
+          <li>置顶文章会显示在列表最前面</li>
+          <li>推荐文章会在首页突出显示</li>
+          <li>支持上传jpg、jpeg、png、gif格式的图片</li>
+          <li>上传图片后可以复制Markdown格式的图片链接</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</div>
+
+{% if article %}
+<script>
+  document.addEventListener("DOMContentLoaded", function () {
+    const copyButtons = document.querySelectorAll(".copy-markdown");
+    copyButtons.forEach((button) => {
+      button.addEventListener("click", function () {
+        const markdown = this.dataset.markdown;
+        navigator.clipboard.writeText(markdown).then(() => {
+          const originalText = this.innerHTML;
+          this.innerHTML = '<i class="fas fa-check"></i> 已复制';
+          setTimeout(() => {
+            this.innerHTML = originalText;
+          }, 2000);
+        });
+      });
+    });
+  });
+</script>
+{% endif %} {% endblock %}

@@ -1,0 +1,35 @@
+{% extends "admin/base.html" %} {% block admin_title %}{{ title }}{% endblock %}
+{% block admin_content %}
+<div class="row">
+  <div class="col-md-6">
+    <form method="post" novalidate>
+      {{ form.hidden_tag() }}
+      <div class="mb-3">
+        {{ form.name.label(class="form-label") }} {{
+        form.name(class="form-control") }} {% for error in form.name.errors %}
+        <span class="text-danger">{{ error }}</span>
+        {% endfor %}
+      </div>
+      <div class="mb-3">
+        {{ form.submit(class="btn btn-primary") }}
+        <a href="{{ url_for('admin.tags') }}" class="btn btn-secondary">取消</a>
+      </div>
+    </form>
+  </div>
+  <div class="col-md-6">
+    <div class="card">
+      <div class="card-header">
+        <h5 class="mb-0">编辑提示</h5>
+      </div>
+      <div class="card-body">
+        <ul class="mb-0">
+          <li>标签名称是必填项，长度不超过50个字符</li>
+          <li>标签名称应该简洁明了，便于用户理解</li>
+          <li>删除标签不会影响已关联的文章</li>
+          <li>建议使用有意义的标签名称，避免使用特殊字符</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

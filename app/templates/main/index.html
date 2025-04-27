@@ -1,0 +1,189 @@
+{% extends "base.html" %} {% block content %}
+<div class="container mt-4">
+  {% if top_articles %}
+  <div class="mb-4">
+    <h4 class="mb-3">Top Articles</h4>
+    <div class="row">
+      {% for article in top_articles %}
+      <div class="col-md-6 mb-3">
+        <div
+          class="card h-100 text-decoration-none text-dark"
+          style="cursor: pointer"
+          data-href="{{ url_for('main.article', id=article.id) }}"
+        >
+          <div class="card-body">
+            <h5 class="card-title">
+              <a class="text-decoration-none text-dark">
+                {{ article.title }}
+              </a>
+            </h5>
+            {% if article.subtitle %}
+            <h6 class="card-subtitle mb-2 text-muted">
+              {{ article.subtitle }}
+            </h6>
+            {% endif %}
+            <p class="card-text small">
+              <span class="text-muted"
+                >{{ article.created_at.strftime('%Y-%m-%d') }}</span
+              >
+              {% if article.tags %}
+              <span class="mx-1">·</span>
+              {% for tag in article.tags %}
+              <a
+                href="{{ url_for('main.tag', id=tag.id) }}"
+                class="badge bg-secondary text-decoration-none"
+                >{{ tag.name }}</a
+              >
+              {% endfor %} {% endif %}
+            </p>
+          </div>
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+  {% endif %} {% if recommended_articles %}
+  <div class="mb-4">
+    <h4 class="mb-3">Recommended Articles</h4>
+    <div class="row">
+      {% for article in recommended_articles %}
+      <div class="col-md-4 mb-3">
+        <div
+          class="card h-100 text-decoration-none text-dark"
+          style="cursor: pointer"
+          data-href="{{ url_for('main.article', id=article.id) }}"
+        >
+          <div class="card-body">
+            <h5 class="card-title">
+              <a class="text-decoration-none text-dark">
+                {{ article.title }}
+              </a>
+            </h5>
+            {% if article.subtitle %}
+            <h6 class="card-subtitle mb-2 text-muted">
+              {{ article.subtitle }}
+            </h6>
+            {% endif %}
+            <p class="card-text small">
+              <span class="text-muted"
+                >{{ article.created_at.strftime('%Y-%m-%d') }}</span
+              >
+              {% if article.tags %}
+              <span class="mx-1">·</span>
+              {% for tag in article.tags %}
+              <a
+                href="{{ url_for('main.tag', id=tag.id) }}"
+                class="badge bg-secondary text-decoration-none"
+                >{{ tag.name }}</a
+              >
+              {% endfor %} {% endif %}
+            </p>
+          </div>
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+  {% endif %}
+
+  <div class="mb-4">
+    <h4 class="mb-3">Latest Articles</h4>
+    <div class="row">
+      {% for article in latest_articles %}
+      <div class="col-md-4 mb-3">
+        <div
+          class="card h-100 text-decoration-none text-dark"
+          style="cursor: pointer"
+          data-href="{{ url_for('main.article', id=article.id) }}"
+        >
+          <div class="card-body">
+            <h5 class="card-title">
+              <a class="text-decoration-none text-dark">
+                {{ article.title }}
+              </a>
+            </h5>
+            {% if article.subtitle %}
+            <h6 class="card-subtitle mb-2 text-muted">
+              {{ article.subtitle }}
+            </h6>
+            {% endif %}
+            <p class="card-text small">
+              <span class="text-muted"
+                >{{ article.created_at.strftime('%Y-%m-%d') }}</span
+              >
+              {% if article.tags %}
+              <span class="mx-1">·</span>
+              {% for tag in article.tags %}
+              <a
+                href="{{ url_for('main.tag', id=tag.id) }}"
+                class="badge bg-secondary text-decoration-none"
+                >{{ tag.name }}</a
+              >
+              {% endfor %} {% endif %}
+            </p>
+          </div>
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+    {% if pagination %}
+    <nav aria-label="Page navigation" class="mt-4">
+      <ul class="pagination justify-content-center">
+        {% if pagination.has_prev %}
+        <li class="page-item">
+          <a
+            class="page-link"
+            href="{{ url_for('main.index', page=pagination.prev_num) }}"
+            >Previous</a
+          >
+        </li>
+        {% else %}
+        <li class="page-item disabled">
+          <span class="page-link">Previous</span>
+        </li>
+        {% endif %} {% for page in pagination.iter_pages() %} {% if page %} {%
+        if page != pagination.page %}
+        <li class="page-item">
+          <a class="page-link" href="{{ url_for('main.index', page=page) }}"
+            >{{ page }}</a
+          >
+        </li>
+        {% else %}
+        <li class="page-item active">
+          <span class="page-link">{{ page }}</span>
+        </li>
+        {% endif %} {% else %}
+        <li class="page-item disabled">
+          <span class="page-link">...</span>
+        </li>
+        {% endif %} {% endfor %} {% if pagination.has_next %}
+        <li class="page-item">
+          <a
+            class="page-link"
+            href="{{ url_for('main.index', page=pagination.next_num) }}"
+            >Next</a
+          >
+        </li>
+        {% else %}
+        <li class="page-item disabled">
+          <span class="page-link">Next</span>
+        </li>
+        {% endif %}
+      </ul>
+    </nav>
+    {% endif %}
+  </div>
+</div>
+
+<script>
+  document.addEventListener("DOMContentLoaded", function () {
+    document.querySelectorAll(".card[data-href]").forEach(function (card) {
+      card.addEventListener("click", function (e) {
+        if (e.target.closest("a, button")) return;
+        window.location = card.getAttribute("data-href");
+      });
+      card.style.cursor = "pointer";
+    });
+  });
+</script>
+{% endblock %}

@@ -1,0 +1,60 @@
+{% extends "base.html" %} {% block content %}
+<div class="container mt-4">
+  <div class="row">
+    <div class="col-md-8">
+      <article class="card">
+        <div class="card-body">
+          <h1 class="mb-3">{{ article.title }}</h1>
+          {% if article.subtitle %}
+          <h4 class="text-muted mb-3">{{ article.subtitle }}</h4>
+          {% endif %}
+
+          <div class="mb-3">
+            <small class="text-muted">
+              {{ article.created_at.strftime('%Y-%m-%d %H:%M') }} {% if
+              article.tags %}
+              <span class="mx-1">·</span>
+              {% for tag in article.tags %}
+              <a
+                href="{{ url_for('main.tag', id=tag.id) }}"
+                class="badge bg-secondary text-decoration-none"
+                >{{ tag.name }}</a
+              >
+              {% endfor %} {% endif %}
+            </small>
+          </div>
+
+          <div class="article-content markdown-body mb-4">
+            {{ article.content | markdown }}
+          </div>
+        </div>
+      </article>
+    </div>
+
+    <div class="col-md-4">
+      {% if related_articles %}
+      <div class="card">
+        <div class="card-header">
+          <h5 class="mb-0">Related Articles</h5>
+        </div>
+        <div class="card-body">
+          <div class="list-group list-group-flush">
+            {% for related in related_articles %}
+            <a
+              href="{{ url_for('main.article', id=related.id) }}"
+              class="list-group-item list-group-item-action"
+            >
+              {{ related.title }}
+              <small class="text-muted d-block"
+                >{{ related.created_at.strftime('%Y-%m-%d') }}</small
+              >
+            </a>
+            {% endfor %}
+          </div>
+        </div>
+      </div>
+      {% endif %}
+    </div>
+  </div>
+</div>
+{% endblock %}

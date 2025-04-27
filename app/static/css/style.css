@@ -1,0 +1,104 @@
+/* 全局样式 */
+body {
+  background-color: #f8f9fa;
+}
+
+/* 导航栏样式 */
+.navbar {
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+/* 卡片样式 */
+.card {
+  border: none;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  transition: transform 0.2s;
+}
+
+.card:hover {
+  transform: translateY(-2px);
+}
+
+/* 文章标题样式 */
+.card-title {
+  color: #333;
+  font-weight: 600;
+}
+
+.card-title a {
+  color: inherit;
+}
+
+.card-title a:hover {
+  color: #007bff;
+  text-decoration: none;
+}
+
+/* 标签样式 */
+.badge {
+  font-weight: normal;
+  padding: 0.5em 0.8em;
+}
+
+/* 页脚样式 */
+.footer {
+  margin-top: 2rem;
+  padding: 1rem 0;
+  background-color: #f8f9fa;
+  border-top: 1px solid #e9ecef;
+}
+
+/* 响应式调整 */
+@media (max-width: 768px) {
+  .card-title {
+    font-size: 1.25rem;
+  }
+
+  .card-subtitle {
+    font-size: 1rem;
+  }
+}
+
+.timeline {
+  border-left: 3px solid #dee2e6;
+  margin-left: 30px;
+  padding-left: 20px;
+  position: relative;
+}
+
+.timeline-item {
+  position: relative;
+}
+
+.timeline-item::before {
+  content: "";
+  position: absolute;
+  left: -32px;
+  top: 24px;
+  width: 14px;
+  height: 14px;
+  background: #6c757d;
+  border: 3px solid #fff;
+  border-radius: 50%;
+  z-index: 1;
+  box-shadow: 0 0 0 2px #dee2e6;
+}
+
+.timeline-date {
+  font-weight: bold;
+  color: #6c757d;
+  min-width: 100px;
+  margin-top: 8px;
+}
+
+.timeline-content {
+  background: #fff;
+  border-radius: 0.5rem;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.03);
+  margin-bottom: 0.5rem;
+  transition: box-shadow 0.2s;
+}
+
+.timeline-content:hover {
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
+}

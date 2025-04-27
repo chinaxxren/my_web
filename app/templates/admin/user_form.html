@@ -1,0 +1,33 @@
+{% extends "admin/base.html" %} {% block admin_title %}{{ title }}{% endblock %}
+{% block admin_content %}
+<div class="card">
+  <div class="card-body">
+    <form method="post">
+      {{ form.hidden_tag() }}
+      <div class="mb-3">
+        {{ form.username.label(class="form-label") }} {{
+        form.username(class="form-control") }} {% for error in
+        form.username.errors %}
+        <span class="text-danger">{{ error }}</span>
+        {% endfor %}
+      </div>
+      <div class="mb-3">
+        {{ form.email.label(class="form-label") }} {{
+        form.email(class="form-control") }} {% for error in form.email.errors %}
+        <span class="text-danger">{{ error }}</span>
+        {% endfor %}
+      </div>
+      <div class="mb-3 form-check">
+        {{ form.is_admin(class="form-check-input") }} {{
+        form.is_admin.label(class="form-check-label") }}
+      </div>
+      <div class="mb-3">
+        {{ form.submit(class="btn btn-primary") }}
+        <a href="{{ url_for('admin.users') }}" class="btn btn-secondary"
+          >取消</a
+        >
+      </div>
+    </form>
+  </div>
+</div>
+{% endblock %}
