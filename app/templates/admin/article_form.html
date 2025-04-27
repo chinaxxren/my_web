@@ -84,19 +84,13 @@
                   {{ image.original_filename }}<br />
                   {{ (image.file_size / 1024)|round(1) }} KB
                 </p>
-                <form
-                  method="post"
-                  action="{{ url_for('admin.delete_image', id=image.id) }}"
-                  class="d-inline"
+                <button
+                  type="button"
+                  class="btn btn-sm btn-outline-danger delete-image"
+                  data-delete-url="{{ url_for('admin.delete_image', id=image.id) }}"
                 >
-                  <button
-                    type="submit"
-                    class="btn btn-sm btn-outline-danger"
-                    onclick="return confirm('确定要删除这张图片吗？')"
-                  >
-                    <i class="fas fa-trash"></i>
-                  </button>
-                </form>
+                  <i class="fas fa-trash"></i>
+                </button>
                 <button
                   type="button"
                   class="btn btn-sm btn-outline-primary copy-markdown"
@@ -120,19 +114,13 @@
                   {{ image.original_filename }}<br />
                   {{ (image.file_size / 1024)|round(1) }} KB
                 </p>
-                <form
-                  method="post"
-                  action="{{ url_for('admin.delete_temp_image', temp_id=image.temp_id) }}"
-                  class="d-inline"
+                <button
+                  type="button"
+                  class="btn btn-sm btn-outline-danger delete-image"
+                  data-delete-url="{{ url_for('admin.delete_temp_image', temp_id=image.temp_id) }}"
                 >
-                  <button
-                    type="submit"
-                    class="btn btn-sm btn-outline-danger"
-                    onclick="return confirm('确定要删除这张图片吗？')"
-                  >
-                    <i class="fas fa-trash"></i>
-                  </button>
-                </form>
+                  <i class="fas fa-trash"></i>
+                </button>
                 <button
                   type="button"
                   class="btn btn-sm btn-outline-primary copy-markdown"
@@ -172,44 +160,96 @@
 
 <script>
   document.addEventListener("DOMContentLoaded", function () {
+    // 处理图片删除
+    const deleteButtons = document.querySelectorAll(".delete-image");
+    deleteButtons.forEach((button) => {
+      button.addEventListener("click", async function () {
+        if (!confirm("确定要删除这张图片吗？")) {
+          return;
+        }
+
+        const deleteUrl = this.dataset.deleteUrl;
+        const imageCard = this.closest(".col-md-4");
+
+        try {
+          const response = await fetch(deleteUrl, {
+            method: "POST",
+          });
+          const data = await response.json();
+
+          if (data.success) {
+            // 直接从DOM中移除图片卡片
+            imageCard.remove();
+          } else {
+            alert(data.error || "删除失败");
+          }
+        } catch (error) {
+          console.error("Error:", error);
+          alert("删除失败");
+        }
+      });
+    });
+
+    // 处理复制Markdown
     const copyButtons = document.querySelectorAll(".copy-markdown");
     copyButtons.forEach((button) => {
-      button.addEventListener("click", function () {
+      button.addEventListener("click", async function () {
         const markdown = this.dataset.markdown;
-        navigator.clipboard.writeText(markdown).then(() => {
+        try {
+          if (navigator.clipboard && window.isSecureContext) {
+            await navigator.clipboard.writeText(markdown);
+          } else {
+            // 回退方案：创建临时文本区域
+            const textArea = document.createElement("textarea");
+            textArea.value = markdown;
+            textArea.style.position = "fixed";
+            textArea.style.left = "-999999px";
+            document.body.appendChild(textArea);
+            textArea.select();
+            try {
+              document.execCommand("copy");
+            } catch (err) {
+              console.error("复制失败:", err);
+            }
+            document.body.removeChild(textArea);
+          }
           const originalText = this.innerHTML;
           this.innerHTML = '<i class="fas fa-check"></i> 已复制';
           setTimeout(() => {
             this.innerHTML = originalText;
           }, 2000);
-        });
+        } catch (err) {
+          console.error("复制失败:", err);
+          alert("复制失败，请手动复制");
+        }
       });
     });
 
     // 处理图片上传
     const imageUploadForm = document.getElementById("imageUploadForm");
-    imageUploadForm.addEventListener("submit", function (e) {
-      e.preventDefault();
-      const formData = new FormData(this);
+    if (imageUploadForm) {
+      imageUploadForm.addEventListener("submit", function (e) {
+        e.preventDefault();
+        const formData = new FormData(this);
 
-      fetch(this.action, {
-        method: "POST",
-        body: formData,
-      })
-        .then((response) => response.json())
-        .then((data) => {
-          if (data.success) {
-            // 重新加载页面以显示新上传的图片
-            window.location.reload();
-          } else {
-            alert(data.error || "上传失败");
-          }
+        fetch(this.action, {
+          method: "POST",
+          body: formData,
         })
-        .catch((error) => {
-          console.error("Error:", error);
-          alert("上传失败");
-        });
-    });
+          .then((response) => response.json())
+          .then((data) => {
+            if (data.success) {
+              window.location.reload();
+            } else {
+              alert(data.error || "上传失败");
+            }
+          })
+          .catch((error) => {
+            console.error("Error:", error);
+            alert("上传失败");
+          });
+      });
+    }
   });
 </script>
 {% endblock %}
