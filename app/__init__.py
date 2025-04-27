@@ -1,19 +1,7 @@
+import os
 from flask import Flask
-from flask_sqlalchemy import SQLAlchemy
-from flask_migrate import Migrate
-from flask_login import LoginManager
 from config import Config
-import markdown
-from flask import Markup
-from flask_babel import Babel
-from datetime import datetime, timedelta
-
-db = SQLAlchemy()
-migrate = Migrate()
-login = LoginManager()
-login.login_view = "auth.login"
-login.login_message = "请先登录"
-babel = Babel()
+from .extensions import db, migrate, login, babel
 
 
 def create_app(config_class=Config):
@@ -37,34 +25,31 @@ def create_app(config_class=Config):
 
     app.register_blueprint(admin_bp, url_prefix="/admin")
 
-    # 注册命令
-    from app.commands import init_data
-
-    app.cli.add_command(init_data)
-
+    @app.template_filter("markdown")
     def markdown_filter(text):
-        return Markup(markdown.markdown(text, extensions=["fenced_code", "codehilite"]))
+        from markdown import markdown
 
-    app.jinja_env.filters["markdown"] = markdown_filter
+        return markdown(text)
 
-    def friendly_time(dt):
+    @app.template_filter("timedelta")
+    def timedelta_filter(dt):
+        from datetime import datetime
+
         now = datetime.utcnow()
         diff = now - dt
-        if diff < timedelta(minutes=1):
-            return "刚刚"
-        elif diff < timedelta(hours=1):
-            mins = int(diff.total_seconds() // 60)
-            return f"{mins}分钟前"
-        elif diff < timedelta(days=1):
-            hours = int(diff.total_seconds() // 3600)
-            return f"{hours}小时前"
-        elif diff < timedelta(days=7):
-            days = diff.days
-            return f"{days}天前"
-        else:
-            return dt.strftime("%Y-%m-%d")
+        days = diff.days
+        seconds = diff.seconds
+        hours = seconds // 3600
+        minutes = (seconds % 3600) // 60
 
-    app.jinja_env.filters["friendly_time"] = friendly_time
+        if days > 0:
+            return f"{days}天前"
+        elif hours > 0:
+            return f"{hours}小时前"
+        elif minutes > 0:
+            return f"{minutes}分钟前"
+        else:
+            return "刚刚"
 
     return app
 

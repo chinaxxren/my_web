@@ -2,40 +2,56 @@
 <div class="container mt-4">
   {% if top_articles %}
   <div class="mb-4">
-    <h4 class="mb-3">Top Articles</h4>
+    <h4 class="mb-3">置顶文章</h4>
     <div class="row">
       {% for article in top_articles %}
-      <div class="col-md-6 mb-3">
+      <div
+        class="col-12 col-lg-3 col-md-4 col-sm-6 mb-3"
+        style="min-width: 300px"
+      >
         <div
           class="card h-100 text-decoration-none text-dark"
           style="cursor: pointer"
           data-href="{{ url_for('main.article', id=article.id) }}"
         >
-          <div class="card-body">
-            <h5 class="card-title">
-              <a class="text-decoration-none text-dark">
-                {{ article.title }}
-              </a>
-            </h5>
-            {% if article.subtitle %}
-            <h6 class="card-subtitle mb-2 text-muted">
-              {{ article.subtitle }}
-            </h6>
+          <div class="row g-0 h-100">
+            {% if article.images.first() %}
+            <div
+              class="col-md-4 d-flex align-items-center justify-content-center p-2"
+              style="min-height: 100px"
+            >
+              <img
+                src="{{ url_for('static', filename='uploads/' + article.images.first().filename) }}"
+                class="img-fluid rounded-start"
+                alt="{{ article.images.first().original_filename }}"
+                style="max-height: 100%; max-width: 100%; object-fit: contain"
+              />
+            </div>
             {% endif %}
-            <p class="card-text small">
-              <span class="text-muted"
-                >{{ article.created_at.strftime('%Y-%m-%d') }}</span
-              >
-              {% if article.tags %}
-              <span class="mx-1">·</span>
-              {% for tag in article.tags %}
-              <a
-                href="{{ url_for('main.tag', id=tag.id) }}"
-                class="badge bg-secondary text-decoration-none"
-                >{{ tag.name }}</a
-              >
-              {% endfor %} {% endif %}
-            </p>
+            <div
+              class="col-md-{% if article.images.first() %}8{% else %}12{% endif %} d-flex align-items-center"
+            >
+              <div class="card-body d-flex flex-column">
+                <h6 class="card-title mb-2">
+                  <a
+                    href="{{ url_for('main.article', id=article.id) }}"
+                    class="text-decoration-none text-dark"
+                    >{{ article.title }}</a
+                  >
+                </h6>
+                <div class="mt-auto">
+                  <div class="text-muted small">
+                    {% for tag in article.tags %}
+                    <a
+                      href="{{ url_for('main.tag', id=tag.id) }}"
+                      class="badge bg-secondary text-decoration-none"
+                      >{{ tag.name }}</a
+                    >
+                    {% endfor %}
+                  </div>
+                </div>
+              </div>
+            </div>
           </div>
         </div>
       </div>
@@ -44,40 +60,56 @@
   </div>
   {% endif %} {% if recommended_articles %}
   <div class="mb-4">
-    <h4 class="mb-3">Recommended Articles</h4>
+    <h4 class="mb-3">推荐文章</h4>
     <div class="row">
       {% for article in recommended_articles %}
-      <div class="col-md-4 mb-3">
+      <div
+        class="col-12 col-lg-3 col-md-4 col-sm-6 mb-3"
+        style="min-width: 300px"
+      >
         <div
           class="card h-100 text-decoration-none text-dark"
           style="cursor: pointer"
           data-href="{{ url_for('main.article', id=article.id) }}"
         >
-          <div class="card-body">
-            <h5 class="card-title">
-              <a class="text-decoration-none text-dark">
-                {{ article.title }}
-              </a>
-            </h5>
-            {% if article.subtitle %}
-            <h6 class="card-subtitle mb-2 text-muted">
-              {{ article.subtitle }}
-            </h6>
+          <div class="row g-0 h-100">
+            {% if article.images.first() %}
+            <div
+              class="col-md-4 d-flex align-items-center justify-content-center p-2"
+              style="min-height: 100px"
+            >
+              <img
+                src="{{ url_for('static', filename='uploads/' + article.images.first().filename) }}"
+                class="img-fluid rounded-start"
+                alt="{{ article.images.first().original_filename }}"
+                style="max-height: 100%; max-width: 100%; object-fit: contain"
+              />
+            </div>
             {% endif %}
-            <p class="card-text small">
-              <span class="text-muted"
-                >{{ article.created_at.strftime('%Y-%m-%d') }}</span
-              >
-              {% if article.tags %}
-              <span class="mx-1">·</span>
-              {% for tag in article.tags %}
-              <a
-                href="{{ url_for('main.tag', id=tag.id) }}"
-                class="badge bg-secondary text-decoration-none"
-                >{{ tag.name }}</a
-              >
-              {% endfor %} {% endif %}
-            </p>
+            <div
+              class="col-md-{% if article.images.first() %}8{% else %}12{% endif %} d-flex align-items-center"
+            >
+              <div class="card-body d-flex flex-column">
+                <h6 class="card-title mb-2">
+                  <a
+                    href="{{ url_for('main.article', id=article.id) }}"
+                    class="text-decoration-none text-dark"
+                    >{{ article.title }}</a
+                  >
+                </h6>
+                <div class="mt-auto">
+                  <div class="text-muted small">
+                    {% for tag in article.tags %}
+                    <a
+                      href="{{ url_for('main.tag', id=tag.id) }}"
+                      class="badge bg-secondary text-decoration-none"
+                      >{{ tag.name }}</a
+                    >
+                    {% endfor %}
+                  </div>
+                </div>
+              </div>
+            </div>
           </div>
         </div>
       </div>
@@ -90,37 +122,53 @@
     <h4 class="mb-3">最新文章</h4>
     <div class="row">
       {% for article in latest_articles %}
-      <div class="col-md-4 mb-3">
+      <div
+        class="col-12 col-lg-3 col-md-4 col-sm-6 mb-3"
+        style="min-width: 300px"
+      >
         <div
           class="card h-100 text-decoration-none text-dark"
           style="cursor: pointer"
           data-href="{{ url_for('main.article', id=article.id) }}"
         >
-          <div class="card-body">
-            <h5 class="card-title">
-              <a class="text-decoration-none text-dark">
-                {{ article.title }}
-              </a>
-            </h5>
-            {% if article.subtitle %}
-            <h6 class="card-subtitle mb-2 text-muted">
-              {{ article.subtitle }}
-            </h6>
+          <div class="row g-0 h-100">
+            {% if article.images.first() %}
+            <div
+              class="col-md-4 d-flex align-items-center justify-content-center p-2"
+              style="min-height: 100px"
+            >
+              <img
+                src="{{ url_for('static', filename='uploads/' + article.images.first().filename) }}"
+                class="img-fluid rounded-start"
+                alt="{{ article.images.first().original_filename }}"
+                style="max-height: 100%; max-width: 100%; object-fit: contain"
+              />
+            </div>
             {% endif %}
-            <p class="card-text small">
-              <span class="text-muted"
-                >{{ article.created_at.strftime('%Y-%m-%d') }}</span
-              >
-              {% if article.tags %}
-              <span class="mx-1">·</span>
-              {% for tag in article.tags %}
-              <a
-                href="{{ url_for('main.tag', id=tag.id) }}"
-                class="badge bg-secondary text-decoration-none"
-                >{{ tag.name }}</a
-              >
-              {% endfor %} {% endif %}
-            </p>
+            <div
+              class="col-md-{% if article.images.first() %}8{% else %}12{% endif %} d-flex align-items-center"
+            >
+              <div class="card-body d-flex flex-column">
+                <h6 class="card-title mb-2">
+                  <a
+                    href="{{ url_for('main.article', id=article.id) }}"
+                    class="text-decoration-none text-dark"
+                    >{{ article.title }}</a
+                  >
+                </h6>
+                <div class="mt-auto">
+                  <div class="text-muted small">
+                    {% for tag in article.tags %}
+                    <a
+                      href="{{ url_for('main.tag', id=tag.id) }}"
+                      class="badge bg-secondary text-decoration-none"
+                      >{{ tag.name }}</a
+                    >
+                    {% endfor %}
+                  </div>
+                </div>
+              </div>
+            </div>
           </div>
         </div>
       </div>

@@ -1,7 +1,8 @@
 from datetime import datetime
 from flask_login import UserMixin
 from werkzeug.security import generate_password_hash, check_password_hash
-from app import db, login
+from .extensions import db, login
+import uuid
 
 
 class User(UserMixin, db.Model):
@@ -32,7 +33,6 @@ def load_user(id):
 class Article(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     title = db.Column(db.String(200), nullable=False)
-    subtitle = db.Column(db.String(200))
     content = db.Column(db.Text, nullable=False)
     is_published = db.Column(db.Boolean, default=False)
     is_top = db.Column(db.Boolean, default=False)
@@ -73,6 +73,34 @@ class Image(db.Model):
     file_type = db.Column(db.String(50), nullable=False)
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
     article_id = db.Column(db.Integer, db.ForeignKey("article.id"))
+    is_temporary = db.Column(db.Boolean, default=True)
+    temp_id = db.Column(db.String(36), unique=True)  # 用于临时图片的唯一标识
 
     def __repr__(self):
         return f"<Image {self.filename}>"
+
+    @staticmethod
+    def generate_temp_id():
+        return str(uuid.uuid4())
+
+    @staticmethod
+    def cleanup_temporary_images():
+        """清理所有临时图片"""
+        from app import current_app
+        import os
+
+        # 获取所有临时图片
+        temp_images = Image.query.filter_by(is_temporary=True).all()
+
+        for image in temp_images:
+            # 删除文件
+            file_path = os.path.join(
+                current_app.config["UPLOAD_FOLDER"], image.filename
+            )
+            if os.path.exists(file_path):
+                os.remove(file_path)
+
+            # 删除数据库记录
+            db.session.delete(image)
+
+        db.session.commit()

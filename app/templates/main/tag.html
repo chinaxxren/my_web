@@ -1,75 +1,122 @@
 {% extends "base.html" %} {% block title %}标签: {{ tag.name }}{% endblock %} {%
 block content %}
 <div class="container mt-4">
-  <h2 class="mb-4">标签: {{ tag.name }}</h2>
-  {% if articles.items %}
-  <div class="timeline">
-    {% for article in articles.items %}
-    <div class="timeline-item mb-4 d-flex">
+  <div class="mb-4">
+    <h4 class="mb-3">标签：{{ tag.name }}</h4>
+    <div class="row">
+      {% for article in articles.items %}
       <div
-        class="timeline-date text-secondary text-end pe-3"
-        style="min-width: 100px"
+        class="col-12 col-lg-3 col-md-4 col-sm-6 mb-3"
+        style="min-width: 300px"
       >
-        {{ article.created_at|friendly_time }}
+        <div
+          class="card h-100 text-decoration-none text-dark"
+          style="cursor: pointer"
+          data-href="{{ url_for('main.article', id=article.id) }}"
+        >
+          <div class="row g-0 h-100">
+            {% if article.images.first() %}
+            <div
+              class="col-md-4 d-flex align-items-center justify-content-center p-2"
+              style="min-height: 100px"
+            >
+              <img
+                src="{{ url_for('static', filename='uploads/' + article.images.first().filename) }}"
+                class="img-fluid rounded-start"
+                alt="{{ article.images.first().original_filename }}"
+                style="max-height: 100%; max-width: 100%; object-fit: contain"
+              />
+            </div>
+            {% endif %}
+            <div
+              class="col-md-{% if article.images.first() %}8{% else %}12{% endif %} d-flex align-items-center"
+            >
+              <div class="card-body d-flex flex-column">
+                <h6 class="card-title mb-2">
+                  <a
+                    href="{{ url_for('main.article', id=article.id) }}"
+                    class="text-decoration-none text-dark"
+                    >{{ article.title }}</a
+                  >
+                </h6>
+                <div class="mt-auto">
+                  <div class="text-muted small">
+                    {% for tag in article.tags %}
+                    <a
+                      href="{{ url_for('main.tag', id=tag.id) }}"
+                      class="badge bg-secondary text-decoration-none"
+                      >{{ tag.name }}</a
+                    >
+                    {% endfor %}
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
       </div>
-      <a
-        href="{{ url_for('main.article', id=article.id) }}"
-        class="timeline-content flex-grow-1 p-3 bg-white rounded shadow-sm text-decoration-none text-dark d-block"
-      >
-        <h5>{{ article.title }}</h5>
-        {% if article.subtitle %}
-        <div class="text-muted mb-2">{{ article.subtitle }}</div>
-        {% endif %}
-      </a>
+      {% endfor %}
     </div>
-    {% endfor %}
+    {% if articles.pages > 1 %}
+    <nav aria-label="Page navigation" class="mt-4">
+      <ul class="pagination justify-content-center">
+        {% if articles.has_prev %}
+        <li class="page-item">
+          <a
+            class="page-link"
+            href="{{ url_for('main.tag', id=tag.id, page=articles.prev_num) }}"
+            >前一页</a
+          >
+        </li>
+        {% else %}
+        <li class="page-item disabled">
+          <span class="page-link">前一页</span>
+        </li>
+        {% endif %} {% for page in articles.iter_pages() %} {% if page %} {% if
+        page != articles.page %}
+        <li class="page-item">
+          <a
+            class="page-link"
+            href="{{ url_for('main.tag', id=tag.id, page=page) }}"
+            >{{ page }}</a
+          >
+        </li>
+        {% else %}
+        <li class="page-item active">
+          <span class="page-link">{{ page }}</span>
+        </li>
+        {% endif %} {% else %}
+        <li class="page-item disabled">
+          <span class="page-link">...</span>
+        </li>
+        {% endif %} {% endfor %} {% if articles.has_next %}
+        <li class="page-item">
+          <a
+            class="page-link"
+            href="{{ url_for('main.tag', id=tag.id, page=articles.next_num) }}"
+            >后一页</a
+          >
+        </li>
+        {% else %}
+        <li class="page-item disabled">
+          <span class="page-link">后一页</span>
+        </li>
+        {% endif %}
+      </ul>
+    </nav>
+    {% endif %}
   </div>
-
-  {% if articles.pages > 1 %}
-  <nav aria-label="Page navigation" class="mt-4">
-    <ul class="pagination justify-content-center">
-      {% if articles.has_prev %}
-      <li class="page-item">
-        <a
-          class="page-link"
-          href="{{ url_for('main.tag', id=tag.id, page=articles.prev_num) }}"
-          >前一页</a
-        >
-      </li>
-      {% else %}
-      <li class="page-item disabled">
-        <span class="page-link">前一页</span>
-      </li>
-      {% endif %} {% for page in articles.iter_pages() %} {% if page %} {% if
-      page != articles.page %}
-      <li class="page-item">
-        <a
-          class="page-link"
-          href="{{ url_for('main.tag', id=tag.id, page=page) }}"
-          >{{ page }}</a
-        >
-      </li>
-      {% else %}
-      <li class="page-item active">
-        <span class="page-link">{{ page }}</span>
-      </li>
-      {% endif %} {% else %}
-      <li class="page-item disabled"><span class="page-link">...</span></li>
-      {% endif %} {% endfor %} {% if articles.has_next %}
-      <li class="page-item">
-        <a
-          class="page-link"
-          href="{{ url_for('main.tag', id=tag.id, page=articles.next_num) }}"
-          >Next</a
-        >
-      </li>
-      {% else %}
-      <li class="page-item disabled"><span class="page-link">后一页</span></li>
-      {% endif %}
-    </ul>
-  </nav>
-  {% endif %} {% else %}
-  <p>没有相关文章</p>
-  {% endif %}
 </div>
+
+<script>
+  document.addEventListener("DOMContentLoaded", function () {
+    document.querySelectorAll(".card[data-href]").forEach(function (card) {
+      card.addEventListener("click", function (e) {
+        if (e.target.closest("a, button")) return;
+        window.location = card.getAttribute("data-href");
+      });
+      card.style.cursor = "pointer";
+    });
+  });
+</script>
 {% endblock %}

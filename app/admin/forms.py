@@ -1,19 +1,25 @@
 from flask_wtf import FlaskForm
 from flask_wtf.file import FileField, FileAllowed, FileRequired
 from wtforms import StringField, TextAreaField, BooleanField, SubmitField, PasswordField
-from wtforms.validators import DataRequired, Length, Email, EqualTo, ValidationError
+from wtforms.validators import (
+    DataRequired,
+    Length,
+    Email,
+    EqualTo,
+    ValidationError,
+    Optional,
+)
 from app.models import User
 
 
 class ArticleForm(FlaskForm):
     title = StringField("标题", validators=[DataRequired(), Length(max=200)])
-    subtitle = StringField("副标题", validators=[Length(max=200)])
     content = TextAreaField("内容", validators=[DataRequired()])
-    tags = StringField("标签（用英文逗号分隔）", validators=[DataRequired()])
+    tags = StringField("标签", validators=[Optional()])
     is_published = BooleanField("发布")
     is_top = BooleanField("置顶")
     is_recommended = BooleanField("推荐")
-    submit = SubmitField("提交")
+    submit = SubmitField("保存")
 
     def validate_tags(self, tags):
         if tags.data:

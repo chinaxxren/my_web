@@ -1,6 +1,14 @@
-from flask import render_template, redirect, url_for, flash, request, current_app
+from flask import (
+    render_template,
+    redirect,
+    url_for,
+    flash,
+    request,
+    current_app,
+    jsonify,
+)
 from flask_login import login_required, current_user
-from app import db
+from ..extensions import db
 from app.admin import bp
 from app.admin.forms import ArticleForm, TagForm, UserForm, ImageUploadForm
 from app.models import Article, Tag, User, Image
@@ -72,12 +80,12 @@ def articles():
 @admin_required
 def new_article():
     form = ArticleForm()
+    image_form = ImageUploadForm()
     if request.method == "GET":
         form.is_published.data = True
     if form.validate_on_submit():
         article = Article(
             title=form.title.data,
-            subtitle=form.subtitle.data,
             content=form.content.data,
             is_published=form.is_published.data,
             is_top=form.is_top.data,
@@ -95,9 +103,24 @@ def new_article():
 
         db.session.add(article)
         db.session.commit()
+
+        # 关联临时图片
+        temp_images = Image.query.filter_by(is_temporary=True).all()
+        for image in temp_images:
+            image.article_id = article.id
+            image.is_temporary = False
+            image.temp_id = None
+
+        db.session.commit()
         flash("文章已创建")
         return redirect(url_for("admin.articles"))
-    return render_template("admin/article_form.html", title="新建文章", form=form)
+    return render_template(
+        "admin/article_form.html",
+        title="新建文章",
+        form=form,
+        image_form=image_form,
+        temp_images=Image.query.filter_by(is_temporary=True).all(),
+    )
 
 
 @bp.route("/article/<int:id>/edit", methods=["GET", "POST"])
@@ -109,7 +132,6 @@ def edit_article(id):
     image_form = ImageUploadForm()
     if form.validate_on_submit():
         article.title = form.title.data
-        article.subtitle = form.subtitle.data
         article.content = form.content.data
         article.is_published = form.is_published.data
         article.is_top = form.is_top.data
@@ -130,7 +152,6 @@ def edit_article(id):
         return redirect(url_for("admin.articles"))
     elif request.method == "GET":
         form.title.data = article.title
-        form.subtitle.data = article.subtitle
         form.content.data = article.content
         form.is_published.data = article.is_published
         form.is_top.data = article.is_top
@@ -238,6 +259,60 @@ def edit_user(id):
     )
 
 
+@bp.route("/upload_temp_image", methods=["POST"])
+@login_required
+@admin_required
+def upload_temp_image():
+    form = ImageUploadForm()
+    if form.validate_on_submit():
+        file = form.image.data
+        if file:
+            # 生成唯一文件名
+            filename = secure_filename(file.filename)
+            unique_filename = f"{uuid.uuid4().hex}_{filename}"
+
+            # 保存文件
+            file_path = os.path.join(
+                current_app.config["UPLOAD_FOLDER"], unique_filename
+            )
+            file.save(file_path)
+
+            # 创建图片记录
+            image = Image(
+                filename=unique_filename,
+                original_filename=filename,
+                file_size=os.path.getsize(file_path),
+                file_type=file.content_type,
+                is_temporary=True,
+                temp_id=Image.generate_temp_id(),
+            )
+
+            db.session.add(image)
+            db.session.commit()
+
+            return jsonify({"success": True, "message": "图片上传成功"})
+
+    return jsonify({"success": False, "error": "图片上传失败"})
+
+
+@bp.route("/delete_temp_image/<temp_id>", methods=["POST"])
+@login_required
+@admin_required
+def delete_temp_image(temp_id):
+    image = Image.query.filter_by(temp_id=temp_id, is_temporary=True).first_or_404()
+
+    # 删除文件
+    file_path = os.path.join(current_app.config["UPLOAD_FOLDER"], image.filename)
+    if os.path.exists(file_path):
+        os.remove(file_path)
+
+    # 删除数据库记录
+    db.session.delete(image)
+    db.session.commit()
+
+    return jsonify({"success": True, "message": "图片已删除"})
+
+
 @bp.route("/article/<int:article_id>/upload_image", methods=["POST"])
 @login_required
 @admin_required
@@ -252,10 +327,9 @@ def upload_image(article_id):
             unique_filename = f"{uuid.uuid4().hex}_{filename}"
 
             # 保存文件
-            upload_folder = os.path.join(current_app.static_folder, "uploads")
-            if not os.path.exists(upload_folder):
-                os.makedirs(upload_folder)
-            file_path = os.path.join(upload_folder, unique_filename)
+            file_path = os.path.join(
+                current_app.config["UPLOAD_FOLDER"], unique_filename
+            )
             file.save(file_path)
 
             # 创建图片记录
@@ -264,16 +338,16 @@ def upload_image(article_id):
                 original_filename=filename,
                 file_size=os.path.getsize(file_path),
                 file_type=file.content_type,
-                article=article,
+                article_id=article.id,
+                is_temporary=False,
             )
+
             db.session.add(image)
             db.session.commit()
 
-            flash("图片上传成功")
-    else:
-        for error in form.image.errors:
-            flash(error)
-    return redirect(url_for("admin.edit_article", id=article_id))
+            return jsonify({"success": True, "message": "图片上传成功"})
+
+    return jsonify({"success": False, "error": "图片上传失败"})
 
 
 @bp.route("/image/<int:id>/delete", methods=["POST"])
@@ -281,12 +355,14 @@ def upload_image(article_id):
 @admin_required
 def delete_image(id):
     image = Image.query.get_or_404(id)
+
     # 删除文件
-    file_path = os.path.join(current_app.static_folder, "uploads", image.filename)
+    file_path = os.path.join(current_app.config["UPLOAD_FOLDER"], image.filename)
     if os.path.exists(file_path):
         os.remove(file_path)
+
     # 删除数据库记录
     db.session.delete(image)
     db.session.commit()
-    flash("图片已删除")
-    return redirect(url_for("admin.edit_article", id=image.article_id))
+
+    return jsonify({"success": True, "message": "图片已删除"})
