@@ -121,6 +121,8 @@ find . -type f -name "*.pyc" -delete
 
 # 数据库迁移
 echo "执行数据库迁移..."
+flask db stamp head || { echo "错误：数据库版本标记失败"; exit 1; }
+flask db migrate || { echo "错误：数据库迁移生成失败"; exit 1; }
 flask db upgrade || { echo "错误：数据库迁移失败"; exit 1; }
 
 # 初始化数据
