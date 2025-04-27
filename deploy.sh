@@ -121,9 +121,27 @@ find . -type f -name "*.pyc" -delete
 
 # 数据库迁移
 echo "执行数据库迁移..."
-flask db stamp head || { echo "错误：数据库版本标记失败"; exit 1; }
-flask db migrate || { echo "错误：数据库迁移生成失败"; exit 1; }
-flask db upgrade || { echo "错误：数据库迁移失败"; exit 1; }
+
+# 检查数据库文件是否存在
+if [ ! -f "instance/app.db" ]; then
+    echo "创建数据库..."
+    mkdir -p instance
+    touch instance/app.db
+fi
+
+# 确保migrations目录存在
+if [ ! -d "migrations" ]; then
+    echo "初始化数据库迁移..."
+    export FLASK_APP=app
+    flask db init || { echo "错误：数据库迁移初始化失败"; exit 1; }
+fi
+
+# 创建并应用迁移
+echo "创建迁移..."
+export FLASK_APP=app
+flask db migrate -m "Initial migration" || { echo "错误：迁移创建失败"; exit 1; }
+echo "应用迁移..."
+flask db upgrade || { echo "错误：迁移应用失败"; exit 1; }
 
 # 初始化数据
 echo "初始化数据..."
