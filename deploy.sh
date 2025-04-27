@@ -5,49 +5,114 @@ set -e
 
 # 应用名称和端口
 APP_NAME="news_web"
-PORT=5000
+PORT=3389
 PID_FILE="app.pid"
 LOG_FILE="app.log"
+LOCK_FILE="deploy.lock"
+
+# 检查是否已经有部署在进行
+if [ -f "$LOCK_FILE" ]; then
+    echo "错误：另一个部署正在进行中"
+    exit 1
+fi
+
+# 创建锁文件
+touch "$LOCK_FILE"
+
+# 清理函数
+cleanup() {
+    rm -f "$LOCK_FILE"
+    echo "清理完成"
+}
+
+# 确保在脚本退出时清理锁文件
+trap cleanup EXIT
 
 # 获取进程ID
 get_pid() {
-    if [ -f $PID_FILE ]; then
-        cat $PID_FILE
+    if [ -f "$PID_FILE" ]; then
+        cat "$PID_FILE"
     else
         echo ""
+    fi
+}
+
+# 检查进程是否存在
+check_process() {
+    local pid=$1
+    if [ -z "$pid" ]; then
+        return 1
+    fi
+    if ps -p "$pid" > /dev/null; then
+        return 0
+    else
+        return 1
     fi
 }
 
 # 停止应用
 stop_app() {
     echo "停止应用..."
-    PID=$(get_pid)
-    if [ ! -z "$PID" ]; then
-        kill $PID
-        rm -f $PID_FILE
+    local pid=$(get_pid)
+    if [ -n "$pid" ] && check_process "$pid"; then
+        echo "正在停止进程 $pid..."
+        kill "$pid" || true
+        # 等待进程结束
+        for i in {1..10}; do
+            if ! check_process "$pid"; then
+                break
+            fi
+            sleep 1
+        done
+        # 如果进程仍然存在，强制终止
+        if check_process "$pid"; then
+            echo "进程未响应，强制终止..."
+            kill -9 "$pid" || true
+        fi
+        rm -f "$PID_FILE"
         echo "应用已停止"
     else
         echo "应用未运行"
+        rm -f "$PID_FILE"
     fi
 }
 
 # 启动应用
 start_app() {
     echo "启动应用..."
-    nohup flask run --host=0.0.0.0 --port=$PORT > $LOG_FILE 2>&1 &
-    echo $! > $PID_FILE
-    echo "应用已启动，PID: $(get_pid)"
+    stop_app  # 确保没有旧进程在运行
+    
+    # 创建日志目录（如果不存在）
+    mkdir -p logs
+    
+    # 启动应用并记录PID
+    nohup flask run --host=0.0.0.0 --port="$PORT" > "logs/$LOG_FILE" 2>&1 &
+    local pid=$!
+    echo "$pid" > "$PID_FILE"
+    
+    # 等待应用启动
+    for i in {1..10}; do
+        if check_process "$pid"; then
+            echo "应用已启动，PID: $pid"
+            return 0
+        fi
+        sleep 1
+    done
+    
+    echo "错误：应用启动失败"
+    return 1
 }
 
+# 主部署流程
 echo "开始部署..."
 
 # 拉取最新代码
 echo "拉取最新代码..."
-git pull
+git pull || { echo "错误：拉取代码失败"; exit 1; }
 
 # 安装依赖
 echo "安装依赖..."
-pip install -r requirements.txt
+pip install -r requirements.txt || { echo "错误：安装依赖失败"; exit 1; }
 
 # 清理缓存
 echo "清理缓存..."
@@ -56,14 +121,16 @@ find . -type f -name "*.pyc" -delete
 
 # 数据库迁移
 echo "执行数据库迁移..."
-flask db upgrade
+flask db upgrade || { echo "错误：数据库迁移失败"; exit 1; }
 
 # 初始化数据
 echo "初始化数据..."
-flask init-data
+flask init-data || { echo "错误：数据初始化失败"; exit 1; }
 
 # 重启应用
-stop_app
-start_app
-
-echo "部署完成！" 
+if start_app; then
+    echo "部署完成！"
+else
+    echo "部署失败！"
+    exit 1
+fi 

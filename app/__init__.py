@@ -51,16 +51,16 @@ def create_app(config_class=Config):
         now = datetime.utcnow()
         diff = now - dt
         if diff < timedelta(minutes=1):
-            return "just now"
+            return "刚刚"
         elif diff < timedelta(hours=1):
             mins = int(diff.total_seconds() // 60)
-            return f"{mins}m ago"
+            return f"{mins}分钟前"
         elif diff < timedelta(days=1):
             hours = int(diff.total_seconds() // 3600)
-            return f"{hours}h ago"
+            return f"{hours}小时前"
         elif diff < timedelta(days=7):
             days = diff.days
-            return f"{days}d ago"
+            return f"{days}天前"
         else:
             return dt.strftime("%Y-%m-%d")
 

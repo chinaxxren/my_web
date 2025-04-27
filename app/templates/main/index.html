@@ -87,7 +87,7 @@
   {% endif %}
 
   <div class="mb-4">
-    <h4 class="mb-3">Latest Articles</h4>
+    <h4 class="mb-3">最新文章</h4>
     <div class="row">
       {% for article in latest_articles %}
       <div class="col-md-4 mb-3">
@@ -134,12 +134,12 @@
           <a
             class="page-link"
             href="{{ url_for('main.index', page=pagination.prev_num) }}"
-            >Previous</a
+            >前一页</a
           >
         </li>
         {% else %}
         <li class="page-item disabled">
-          <span class="page-link">Previous</span>
+          <span class="page-link">前一页</span>
         </li>
         {% endif %} {% for page in pagination.iter_pages() %} {% if page %} {%
         if page != pagination.page %}
@@ -161,12 +161,12 @@
           <a
             class="page-link"
             href="{{ url_for('main.index', page=pagination.next_num) }}"
-            >Next</a
+            >后一页</a
           >
         </li>
         {% else %}
         <li class="page-item disabled">
-          <span class="page-link">Next</span>
+          <span class="page-link">后一页</span>
         </li>
         {% endif %}
       </ul>

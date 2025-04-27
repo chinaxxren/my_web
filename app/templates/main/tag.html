@@ -1,7 +1,7 @@
-{% extends "base.html" %} {% block title %}Tag: {{ tag.name }}{% endblock %} {%
+{% extends "base.html" %} {% block title %}标签: {{ tag.name }}{% endblock %} {%
 block content %}
 <div class="container mt-4">
-  <h2 class="mb-4">Tag: {{ tag.name }}</h2>
+  <h2 class="mb-4">标签: {{ tag.name }}</h2>
   {% if articles.items %}
   <div class="timeline">
     {% for article in articles.items %}
@@ -33,12 +33,12 @@ block content %}
         <a
           class="page-link"
           href="{{ url_for('main.tag', id=tag.id, page=articles.prev_num) }}"
-          >Previous</a
+          >前一页</a
         >
       </li>
       {% else %}
       <li class="page-item disabled">
-        <span class="page-link">Previous</span>
+        <span class="page-link">前一页</span>
       </li>
       {% endif %} {% for page in articles.iter_pages() %} {% if page %} {% if
       page != articles.page %}
@@ -64,12 +64,12 @@ block content %}
         >
       </li>
       {% else %}
-      <li class="page-item disabled"><span class="page-link">Next</span></li>
+      <li class="page-item disabled"><span class="page-link">后一页</span></li>
       {% endif %}
     </ul>
   </nav>
   {% endif %} {% else %}
-  <p>No related articles.</p>
+  <p>没有相关文章</p>
   {% endif %}
 </div>
 {% endblock %}
