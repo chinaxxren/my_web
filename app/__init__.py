@@ -2,6 +2,7 @@ import os
 from flask import Flask
 from config import Config
 from .extensions import db, migrate, login, babel
+import re
 
 
 def create_app(config_class=Config):
@@ -35,6 +36,24 @@ def create_app(config_class=Config):
         from markdown import markdown
 
         return markdown(text)
+
+    @app.template_filter("wrap_images")
+    def wrap_images_filter(html):
+        # 如果已经有 image-wrapper，不再包装
+        if 'class="image-wrapper"' in html:
+            return html
+
+        # 处理被 p 标签包裹的图片
+        pattern = r"<p>(\s*<img[^>]+>\s*)</p>"
+        replacement = r'<div class="image-wrapper" style="display: block; width: 100%; max-width: 800px; margin: 2rem auto; text-align: center;"><img style="display: block; max-width: 100%; height: auto; margin: 0 auto; border-radius: 4px; box-shadow: 0 2px 4px rgba(0,0,0,0.1);" \1</div>'
+        result = re.sub(pattern, replacement, html)
+
+        # 处理未被 p 标签包裹的图片
+        pattern = r'(?<!wrapper">)(<img[^>]+>)'
+        replacement = r'<div class="image-wrapper" style="display: block; width: 100%; max-width: 800px; margin: 2rem auto; text-align: center;"><img style="display: block; max-width: 100%; height: auto; margin: 0 auto; border-radius: 4px; box-shadow: 0 2px 4px rgba(0,0,0,0.1);" \1</div>'
+        result = re.sub(pattern, replacement, result)
+
+        return result
 
     @app.template_filter("timedelta")
     def timedelta_filter(dt):
