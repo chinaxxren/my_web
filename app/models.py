@@ -43,7 +43,9 @@ class Article(db.Model):
     )
     author_id = db.Column(db.Integer, db.ForeignKey("user.id"))
     tags = db.relationship("Tag", secondary="article_tag", backref="articles")
-    images = db.relationship("Image", backref="article", lazy="dynamic")
+    images = db.relationship(
+        "Image", backref="article", lazy="dynamic", cascade="all, delete-orphan"
+    )
 
     def __repr__(self):
         return f"<Article {self.title}>"

@@ -172,8 +172,17 @@ def edit_article(id):
 @admin_required
 def delete_article(id):
     article = Article.query.get_or_404(id)
+
+    # 删除物理文件
+    for image in article.images:
+        file_path = os.path.join(current_app.config["UPLOAD_FOLDER"], image.filename)
+        if os.path.exists(file_path):
+            os.remove(file_path)
+
+    # 删除文章（会自动级联删除图片记录）
     db.session.delete(article)
     db.session.commit()
+
     flash("文章已删除")
     return redirect(url_for("admin.articles"))
 
