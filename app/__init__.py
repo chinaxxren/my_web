@@ -25,6 +25,11 @@ def create_app(config_class=Config):
 
     app.register_blueprint(admin_bp, url_prefix="/admin")
 
+    # 注册命令
+    from app.commands import init_data
+
+    app.cli.add_command(init_data)
+
     @app.template_filter("markdown")
     def markdown_filter(text):
         from markdown import markdown
