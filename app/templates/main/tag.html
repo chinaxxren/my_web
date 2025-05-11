@@ -1,8 +1,8 @@
-{% extends "base.html" %} {% block title %}标签: {{ tag.name }}{% endblock %} {%
-block content %}
+{% extends "base.html" %} {% block title %}{{ tag.name }}{% endblock %} {% block
+content %}
 <div class="container mt-4">
   <div class="mb-4">
-    <h4 class="mb-3">标签：{{ tag.name }}</h4>
+    <h4 class="mb-3">{{ _('标签：') }}{{ tag.name }}</h4>
     <div class="row">
       {% for article in articles.items %}
       <div
@@ -65,12 +65,12 @@ block content %}
           <a
             class="page-link"
             href="{{ url_for('main.tag', id=tag.id, page=articles.prev_num) }}"
-            >前一页</a
+            >{{ _('前一页') }}</a
           >
         </li>
         {% else %}
         <li class="page-item disabled">
-          <span class="page-link">前一页</span>
+          <span class="page-link">{{ _('前一页') }}</span>
         </li>
         {% endif %} {% for page in articles.iter_pages() %} {% if page %} {% if
         page != articles.page %}
@@ -94,12 +94,12 @@ block content %}
           <a
             class="page-link"
             href="{{ url_for('main.tag', id=tag.id, page=articles.next_num) }}"
-            >后一页</a
+            >{{ _('后一页') }}</a
           >
         </li>
         {% else %}
         <li class="page-item disabled">
-          <span class="page-link">后一页</span>
+          <span class="page-link">{{ _('后一页') }}</span>
         </li>
         {% endif %}
       </ul>

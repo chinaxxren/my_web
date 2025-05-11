@@ -1,0 +1,84 @@
+msgid ""
+msgstr ""
+"Project-Id-Version: 1.0\n"
+"POT-Creation-Date: 2024-05-11 12:00+0800\n"
+"PO-Revision-Date: 2024-05-11 12:00+0800\n"
+"Last-Translator: \n"
+"Language-Team: \n"
+"Language: zh\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=1; plural=0;\n"
+
+msgid "精选文章"
+msgstr "精选文章"
+
+msgid "首页"
+msgstr "首页"
+
+msgid "搜索文章"
+msgstr "搜索文章"
+
+msgid "管理面板"
+msgstr "管理面板"
+
+msgid "退出"
+msgstr "退出"
+
+msgid "相关文章"
+msgstr "相关文章"
+
+msgid "请先登录"
+msgstr "请先登录"
+
+msgid "天前"
+msgstr "天前"
+
+msgid "小时前"
+msgstr "小时前"
+
+msgid "分钟前"
+msgstr "分钟前"
+
+msgid "刚刚"
+msgstr "刚刚"
+
+msgid "新闻"
+msgstr "新闻"
+
+msgid "技术"
+msgstr "技术"
+
+msgid "生活"
+msgstr "生活"
+
+msgid "娱乐"
+msgstr "娱乐"
+
+msgid "体育"
+msgstr "体育"
+
+msgid "最新文章"
+msgstr "最新文章"
+
+msgid "搜索结果:"
+msgstr "搜索结果:"
+
+msgid "没有找到相关文章"
+msgstr "没有找到相关文章"
+
+msgid "标签："
+msgstr "标签："
+
+msgid "前一页"
+msgstr "前一页"
+
+msgid "后一页"
+msgstr "后一页"
+
+msgid "置顶文章"
+msgstr "置顶文章"
+
+msgid "推荐文章"
+msgstr "推荐文章" 

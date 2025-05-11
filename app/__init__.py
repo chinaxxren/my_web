@@ -1,7 +1,7 @@
 import os
-from flask import Flask
+from flask import Flask, request, g
 from config import Config
-from .extensions import db, migrate, login, babel
+from .extensions import db, login, babel
 import re
 
 
@@ -10,7 +10,6 @@ def create_app(config_class=Config):
     app.config.from_object(config_class)
 
     db.init_app(app)
-    migrate.init_app(app, db)
     login.init_app(app)
     babel.init_app(app)
 
@@ -27,9 +26,20 @@ def create_app(config_class=Config):
     app.register_blueprint(admin_bp, url_prefix="/admin")
 
     # 注册命令
-    from app.commands import init_data
+    from app.commands import init_data, init_db_command
 
     app.cli.add_command(init_data)
+    app.cli.add_command(init_db_command)
+
+    @babel.localeselector
+    def get_locale():
+        # 从数据库获取语言设置
+        from app.models import SiteSetting
+
+        settings = SiteSetting.get_settings()
+        if settings and settings.site_language in ["en", "zh"]:
+            return settings.site_language
+        return "zh"
 
     @app.template_filter("markdown")
     def markdown_filter(text):

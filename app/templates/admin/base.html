@@ -37,6 +37,14 @@
               <i class="fas fa-users"></i> 用户管理
             </a>
           </li>
+          <li class="nav-item">
+            <a
+              class="nav-link {% if request.endpoint == 'admin.settings' %}active{% endif %}"
+              href="{{ url_for('admin.settings') }}"
+            >
+              <i class="fas fa-cog"></i> 网站设置
+            </a>
+          </li>
         </ul>
       </div>
     </nav>

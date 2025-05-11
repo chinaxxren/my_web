@@ -5,7 +5,7 @@
   /* 使用更具体的选择器 */
   .card .card-body .article-content {
     width: 100%;
-    border: 1px solid red; /* 用于调试 */
+    /* border: 1px solid red;  用于调试 */
   }
 
   .card .card-body .article-content .image-wrapper {
@@ -116,7 +116,7 @@
       {% if related_articles %}
       <div class="card">
         <div class="card-header">
-          <h5 class="mb-0">相关文章</h5>
+          <h5 class="mb-0">{{ _('相关文章') }}</h5>
         </div>
         <div class="card-body">
           <div class="list-group list-group-flush">

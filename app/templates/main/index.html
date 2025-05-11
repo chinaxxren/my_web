@@ -2,7 +2,7 @@
 <div class="container mt-4">
   {% if top_articles %}
   <div class="mb-4">
-    <h4 class="mb-3">置顶文章</h4>
+    <h4 class="mb-3">{{ _('置顶文章') }}</h4>
     <div class="row">
       {% for article in top_articles %}
       <div
@@ -60,7 +60,7 @@
   </div>
   {% endif %} {% if recommended_articles %}
   <div class="mb-4">
-    <h4 class="mb-3">推荐文章</h4>
+    <h4 class="mb-3">{{ _('推荐文章') }}</h4>
     <div class="row">
       {% for article in recommended_articles %}
       <div
@@ -119,7 +119,7 @@
   {% endif %}
 
   <div class="mb-4">
-    <h4 class="mb-3">最新文章</h4>
+    <h4 class="mb-3">{{ _('最新文章') }}</h4>
     <div class="row">
       {% for article in latest_articles %}
       <div
@@ -182,12 +182,12 @@
           <a
             class="page-link"
             href="{{ url_for('main.index', page=pagination.prev_num) }}"
-            >前一页</a
+            >{{ _('前一页') }}</a
           >
         </li>
         {% else %}
         <li class="page-item disabled">
-          <span class="page-link">前一页</span>
+          <span class="page-link">{{ _('前一页') }}</span>
         </li>
         {% endif %} {% for page in pagination.iter_pages() %} {% if page %} {%
         if page != pagination.page %}
@@ -209,12 +209,12 @@
           <a
             class="page-link"
             href="{{ url_for('main.index', page=pagination.next_num) }}"
-            >后一页</a
+            >{{ _('后一页') }}</a
           >
         </li>
         {% else %}
         <li class="page-item disabled">
-          <span class="page-link">后一页</span>
+          <span class="page-link">{{ _('后一页') }}</span>
         </li>
         {% endif %}
       </ul>

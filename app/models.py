@@ -139,3 +139,29 @@ class Image(db.Model):
         return (
             cls.query.filter_by(is_temporary=True).order_by(cls.created_at.desc()).all()
         )
+
+
+class SiteSetting(db.Model):
+    """网站全局设置"""
+
+    id = db.Column(db.Integer, primary_key=True)
+    site_language = db.Column(db.String(10), default="zh")  # 'zh' 或 'en'
+    site_name = db.Column(db.String(100), default="精选文章")
+    site_description = db.Column(db.String(200))
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    updated_at = db.Column(
+        db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow
+    )
+
+    @classmethod
+    def get_settings(cls):
+        """获取网站设置，如果不存在则创建默认设置"""
+        settings = cls.query.first()
+        if not settings:
+            settings = cls()
+            db.session.add(settings)
+            db.session.commit()
+        return settings
+
+    def __repr__(self):
+        return f"<SiteSetting {self.site_name}>"

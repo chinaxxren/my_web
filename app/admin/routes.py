@@ -10,13 +10,20 @@ from flask import (
 from flask_login import login_required, current_user
 from ..extensions import db
 from app.admin import bp
-from app.admin.forms import ArticleForm, TagForm, UserForm, ImageUploadForm
-from app.models import Article, Tag, User, Image
+from app.admin.forms import (
+    ArticleForm,
+    TagForm,
+    UserForm,
+    ImageUploadForm,
+    SiteSettingForm,
+)
+from app.models import Article, Tag, User, Image, SiteSetting
 from functools import wraps
 import os
 import uuid
 from werkzeug.utils import secure_filename
 from datetime import datetime, timedelta
+from app.utils import admin_required
 
 
 def admin_required(f):
@@ -380,3 +387,19 @@ def delete_image(id):
     db.session.commit()
 
     return jsonify({"success": True, "message": "图片已删除"})
+
+
+@bp.route("/settings", methods=["GET", "POST"])
+@login_required
+@admin_required
+def settings():
+    settings = SiteSetting.get_settings()
+    form = SiteSettingForm(obj=settings)
+    if form.validate_on_submit():
+        settings.site_name = form.site_name.data
+        settings.site_description = form.site_description.data
+        settings.site_language = form.site_language.data
+        db.session.commit()
+        flash("设置已更新")
+        return redirect(url_for("admin.settings"))
+    return render_template("admin/settings.html", form=form)

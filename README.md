@@ -1,28 +1,40 @@
-# 新闻网站
+# 精选文章网站
 
-一个基于 Flask 的新闻网站，支持文章发布、评论、标签管理等功能。
+一个基于 Flask 的新闻文章网站，支持文章发布、标签管理、用户认证等功能。
 
 ## 功能特点
 
-- 用户系统（注册、登录、权限管理）
-- 文章管理（创建、编辑、删除、发布）
-- 标签管理
-- 评论系统
-- 图片上传
-- Markdown 支持
-- 搜索功能
-- 管理后台
+- 文章管理：发布、编辑、删除文章
+- 标签系统：为文章添加标签，按标签浏览文章
+- 用户认证：登录、注册、权限管理
+- 响应式设计：适配各种设备屏幕
+- Markdown 支持：使用 Markdown 编写文章
+- 图片上传：支持文章配图
+- 搜索功能：全文搜索文章
+- 多语言支持：使用 Flask-Babel 实现国际化
 
-## 安装步骤
+## 技术栈
 
-1. 克隆项目
+- 后端：Flask
+- 数据库：SQLite
+- 前端：Bootstrap 5
+- 模板引擎：Jinja2
+- 认证：Flask-Login
+- 表单处理：Flask-WTF
+- 国际化：Flask-Babel
+- Markdown 渲染：Python-Markdown
+- 图片处理：Pillow
+
+## 安装说明
+
+1. 克隆仓库：
 
 ```bash
 git clone <repository-url>
-cd news_web
+cd <project-directory>
 ```
 
-2. 创建虚拟环境
+2. 创建虚拟环境：
 
 ```bash
 python -m venv venv
@@ -31,58 +43,92 @@ source venv/bin/activate  # Linux/Mac
 venv\Scripts\activate  # Windows
 ```
 
-3. 安装依赖
+3. 安装依赖：
 
 ```bash
 pip install -r requirements.txt
 ```
 
-4. 配置环境变量
-   创建 `.env` 文件并设置以下变量：
+4. 配置环境变量：
+   创建 `.env` 文件并设置必要的环境变量：
 
 ```
+FLASK_APP=app
+FLASK_ENV=development
 SECRET_KEY=your-secret-key
-DATABASE_URL=sqlite:///app.db
 ```
 
-## 启动应用
-
-1. 运行启动脚本
+5. 初始化数据库：
 
 ```bash
-python run.py
+flask init-db
 ```
 
-2. 访问应用
+6. 运行应用：
 
-- 前台：http://localhost:5000
-- 后台：http://localhost:5000/admin
-- 管理员账号：admin
-- 管理员密码：admin
-
-## 开发说明
-
-- 使用 Flask 作为 Web 框架
-- 使用 SQLAlchemy 作为 ORM
-- 使用 Flask-Migrate 管理数据库迁移
-- 使用 Flask-Login 处理用户认证
-- 使用 Flask-WTF 处理表单
-- 使用 Markdown 和 Bleach 处理文章内容
-- 使用 Bootstrap 5 构建界面
+```bash
+flask run
+```
 
 ## 项目结构
 
 ```
-news_web/
 ├── app/
 │   ├── __init__.py
 │   ├── models.py
-│   ├── routes.py
-│   ├── forms.py
-│   ├── templates/
-│   └── static/
-├── migrations/
+│   ├── extensions.py
+│   ├── main/
+│   ├── auth/
+│   └── admin/
+├── static/
+├── templates/
+├── tests/
+├── .env
 ├── config.py
-├── run.py
-└── requirements.txt
+├── requirements.txt
+└── README.md
 ```
+
+## 开发指南
+
+### 添加新功能
+
+1. 在相应的模块中创建新的路由和视图函数
+2. 更新数据库模型（如果需要）
+3. 创建或修改模板
+4. 添加必要的静态文件
+5. 更新测试用例
+
+### 运行测试
+
+```bash
+flask test
+```
+
+### 代码风格
+
+- 遵循 PEP 8 规范
+- 使用 Black 进行代码格式化
+- 使用 Flake8 进行代码检查
+
+## 部署
+
+1. 确保所有依赖都已安装
+2. 设置生产环境变量
+3. 运行部署脚本：
+
+```bash
+./deploy.sh
+```
+
+## 贡献指南
+
+1. Fork 项目
+2. 创建特性分支
+3. 提交更改
+4. 推送到分支
+5. 创建 Pull Request
+
+## 许可证
+
+MIT License

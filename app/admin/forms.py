@@ -1,6 +1,13 @@
 from flask_wtf import FlaskForm
 from flask_wtf.file import FileField, FileAllowed, FileRequired
-from wtforms import StringField, TextAreaField, BooleanField, SubmitField, PasswordField
+from wtforms import (
+    StringField,
+    TextAreaField,
+    BooleanField,
+    SubmitField,
+    PasswordField,
+    SelectField,
+)
 from wtforms.validators import (
     DataRequired,
     Length,
@@ -13,7 +20,7 @@ from app.models import User
 
 
 class ArticleForm(FlaskForm):
-    title = StringField("标题", validators=[DataRequired(), Length(max=200)])
+    title = StringField("标题", validators=[DataRequired(), Length(min=1, max=200)])
     content = TextAreaField("内容", validators=[DataRequired()])
     tags = StringField("标签", validators=[Optional()])
     is_published = BooleanField("发布")
@@ -76,3 +83,14 @@ class ImageUploadForm(FlaskForm):
         ],
     )
     submit = SubmitField("上传")
+
+
+class SiteSettingForm(FlaskForm):
+    site_name = StringField(
+        "网站名称", validators=[DataRequired(), Length(min=1, max=100)]
+    )
+    site_description = TextAreaField(
+        "网站描述", validators=[Optional(), Length(max=200)]
+    )
+    site_language = SelectField("网站语言", choices=[("zh", "中文"), ("en", "English")])
+    submit = SubmitField("保存设置")

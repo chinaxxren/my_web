@@ -1,7 +1,7 @@
 import click
 from flask.cli import with_appcontext
 from app.extensions import db
-from app.models import User, Tag
+from app.models import User, Tag, Article, SiteSetting
 from werkzeug.security import generate_password_hash
 
 
@@ -32,9 +32,28 @@ def init_data():
             db.session.add(tag)
             click.echo(f"创建标签: {tag_name}")
 
+    # 创建默认网站设置
+    settings = SiteSetting.query.first()
+    if not settings:
+        settings = SiteSetting(
+            site_name="精选文章",
+            site_description="一个基于 Flask 的新闻文章网站",
+            site_language="zh",
+        )
+        db.session.add(settings)
+        click.echo("创建默认网站设置...")
+
     try:
         db.session.commit()
         click.echo("数据初始化完成！")
     except Exception as e:
         db.session.rollback()
         click.echo(f"数据初始化失败: {str(e)}")
+
+
+@click.command("init-db")
+@with_appcontext
+def init_db_command():
+    """初始化数据库"""
+    db.create_all()
+    click.echo("数据库表已创建。")
